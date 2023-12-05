@@ -28,8 +28,31 @@ def generate_launch_description():
                 )]), launch_arguments={'use_sim_time': 'false', 'use_ros2_control': 'true'}.items()
     )
 
-    
+    # joystick = IncludeLaunchDescription(
+    #             PythonLaunchDescriptionSource([os.path.join(
+    #                 get_package_share_directory(package_name),'launch','joystick.launch.py'
+    #             )])
+    # )
 
+    rplidar = IncludeLaunchDescription(
+                PythonLaunchDescriptionSource([os.path.join(
+                    get_package_share_directory(package_name),'launch','rplidar_s2_launch.py'
+                )]), launch_arguments={}.items()
+    )
+
+    # realsense = IncludeLaunchDescription(
+    #             PythonLaunchDescriptionSource([os.path.join(
+    #                 get_package_share_directory(package_name),'launch','realsense.launch.py'
+    #             )]), launch_arguments={}.items()
+    # )
+    
+    twist_mux_params = os.path.join(get_package_share_directory(package_name),'config','twist_mux.yaml')
+    twist_mux = Node(
+            package="twist_mux",
+            executable="twist_mux",
+            parameters=[twist_mux_params],
+            remappings=[('/cmd_vel_out','/diff_drive_controller/cmd_vel_unstamped')]
+        )
 
     robot_description = Command(['ros2 param get --hide-type /robot_state_publisher robot_description'])
 
@@ -38,16 +61,16 @@ def generate_launch_description():
     controller_manager = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        parameters=[{'robot_description': robot_description},
-                    controller_params_file]
+        parameters=[{"robot_description":robot_description},controller_params_file],
+        output="both",
     )
 
     delayed_controller_manager = TimerAction(period=3.0, actions=[controller_manager])
 
     diff_drive_spawner = Node(
         package="controller_manager",
-        executable="spawner.py",
-        arguments=["diff_cont"],
+        executable="spawner",
+        arguments=["diff_cont", "--controller-manager", "/controller_manager"],
     )
 
     delayed_diff_drive_spawner = RegisterEventHandler(
@@ -59,8 +82,8 @@ def generate_launch_description():
 
     joint_broad_spawner = Node(
         package="controller_manager",
-        executable="spawner.py",
-        arguments=["joint_broad"],
+        executable="spawner",
+        arguments=["joint_broad", "--controller-manager", "/controller_manager"],
     )
 
     delayed_joint_broad_spawner = RegisterEventHandler(
@@ -92,6 +115,10 @@ def generate_launch_description():
     # Launch them all!
     return LaunchDescription([
         rsp,
+        # joystick,
+        rplidar,
+        # realsense,
+        # twist_mux,
         delayed_controller_manager,
         delayed_diff_drive_spawner,
         delayed_joint_broad_spawner
