@@ -116,7 +116,7 @@ def generate_launch_description():
     return LaunchDescription([
         rsp,
         # joystick,
-        rplidar,
+        # rplidar,
         # realsense,
         # twist_mux,
         delayed_controller_manager,
