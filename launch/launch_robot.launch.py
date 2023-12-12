@@ -40,11 +40,11 @@ def generate_launch_description():
                 )]), launch_arguments={}.items()
     )
 
-    # realsense = IncludeLaunchDescription(
-    #             PythonLaunchDescriptionSource([os.path.join(
-    #                 get_package_share_directory(package_name),'launch','realsense.launch.py'
-    #             )]), launch_arguments={}.items()
-    # )
+    realsense = IncludeLaunchDescription(
+                PythonLaunchDescriptionSource([os.path.join(
+                    get_package_share_directory(package_name),'launch','realsense.launch.py'
+                )]), launch_arguments={}.items()
+    )
     
     twist_mux_params = os.path.join(get_package_share_directory(package_name),'config','twist_mux.yaml')
     twist_mux = Node(
@@ -116,7 +116,7 @@ def generate_launch_description():
     return LaunchDescription([
         rsp,
         # joystick,
-        # rplidar,
+        rplidar,
         # realsense,
         # twist_mux,
         delayed_controller_manager,
